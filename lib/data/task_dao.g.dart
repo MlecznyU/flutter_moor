@@ -8,4 +8,5 @@ part of 'task_dao.dart';
 
 mixin _$TaskDaoMixin on DatabaseAccessor<AppDatabase> {
   $TasksTable get tasks => db.tasks;
+  $TagsTable get tags => db.tags;
 }

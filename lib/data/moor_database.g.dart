@@ -9,11 +9,13 @@ part of 'moor_database.dart';
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class Task extends DataClass implements Insertable<Task> {
   final int id;
+  final String tagName;
   final String name;
   final DateTime dueDate;
   final bool completed;
   Task(
       {@required this.id,
+      this.tagName,
       @required this.name,
       this.dueDate,
       @required this.completed});
@@ -26,6 +28,8 @@ class Task extends DataClass implements Insertable<Task> {
     final boolType = db.typeSystem.forDartType<bool>();
     return Task(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      tagName: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}tag_name']),
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       dueDate: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}due_date']),
@@ -38,6 +42,7 @@ class Task extends DataClass implements Insertable<Task> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Task(
       id: serializer.fromJson<int>(json['id']),
+      tagName: serializer.fromJson<String>(json['tagName']),
       name: serializer.fromJson<String>(json['name']),
       dueDate: serializer.fromJson<DateTime>(json['dueDate']),
       completed: serializer.fromJson<bool>(json['completed']),
@@ -48,6 +53,7 @@ class Task extends DataClass implements Insertable<Task> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'tagName': serializer.toJson<String>(tagName),
       'name': serializer.toJson<String>(name),
       'dueDate': serializer.toJson<DateTime>(dueDate),
       'completed': serializer.toJson<bool>(completed),
@@ -58,6 +64,9 @@ class Task extends DataClass implements Insertable<Task> {
   TasksCompanion createCompanion(bool nullToAbsent) {
     return TasksCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      tagName: tagName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tagName),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       dueDate: dueDate == null && nullToAbsent
           ? const Value.absent()
@@ -68,9 +77,15 @@ class Task extends DataClass implements Insertable<Task> {
     );
   }
 
-  Task copyWith({int id, String name, DateTime dueDate, bool completed}) =>
+  Task copyWith(
+          {int id,
+          String tagName,
+          String name,
+          DateTime dueDate,
+          bool completed}) =>
       Task(
         id: id ?? this.id,
+        tagName: tagName ?? this.tagName,
         name: name ?? this.name,
         dueDate: dueDate ?? this.dueDate,
         completed: completed ?? this.completed,
@@ -79,6 +94,7 @@ class Task extends DataClass implements Insertable<Task> {
   String toString() {
     return (StringBuffer('Task(')
           ..write('id: $id, ')
+          ..write('tagName: $tagName, ')
           ..write('name: $name, ')
           ..write('dueDate: $dueDate, ')
           ..write('completed: $completed')
@@ -87,13 +103,16 @@ class Task extends DataClass implements Insertable<Task> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(name.hashCode, $mrjc(dueDate.hashCode, completed.hashCode))));
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(tagName.hashCode,
+          $mrjc(name.hashCode, $mrjc(dueDate.hashCode, completed.hashCode)))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Task &&
           other.id == this.id &&
+          other.tagName == this.tagName &&
           other.name == this.name &&
           other.dueDate == this.dueDate &&
           other.completed == this.completed);
@@ -101,28 +120,33 @@ class Task extends DataClass implements Insertable<Task> {
 
 class TasksCompanion extends UpdateCompanion<Task> {
   final Value<int> id;
+  final Value<String> tagName;
   final Value<String> name;
   final Value<DateTime> dueDate;
   final Value<bool> completed;
   const TasksCompanion({
     this.id = const Value.absent(),
+    this.tagName = const Value.absent(),
     this.name = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.completed = const Value.absent(),
   });
   TasksCompanion.insert({
     this.id = const Value.absent(),
+    this.tagName = const Value.absent(),
     @required String name,
     this.dueDate = const Value.absent(),
     this.completed = const Value.absent(),
   }) : name = Value(name);
   TasksCompanion copyWith(
       {Value<int> id,
+      Value<String> tagName,
       Value<String> name,
       Value<DateTime> dueDate,
       Value<bool> completed}) {
     return TasksCompanion(
       id: id ?? this.id,
+      tagName: tagName ?? this.tagName,
       name: name ?? this.name,
       dueDate: dueDate ?? this.dueDate,
       completed: completed ?? this.completed,
@@ -141,6 +165,15 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  }
+
+  final VerificationMeta _tagNameMeta = const VerificationMeta('tagName');
+  GeneratedTextColumn _tagName;
+  @override
+  GeneratedTextColumn get tagName => _tagName ??= _constructTagName();
+  GeneratedTextColumn _constructTagName() {
+    return GeneratedTextColumn('tag_name', $tableName, true,
+        $customConstraints: 'NULL REFERENCES tags(name)');
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -174,7 +207,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   }
 
   @override
-  List<GeneratedColumn> get $columns => [id, name, dueDate, completed];
+  List<GeneratedColumn> get $columns => [id, tagName, name, dueDate, completed];
   @override
   $TasksTable get asDslTable => this;
   @override
@@ -187,6 +220,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.tagName.present) {
+      context.handle(_tagNameMeta,
+          tagName.isAcceptableValue(d.tagName.value, _tagNameMeta));
     }
     if (d.name.present) {
       context.handle(
@@ -218,6 +255,9 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     final map = <String, Variable>{};
     if (d.id.present) {
       map['id'] = Variable<int, IntType>(d.id.value);
+    }
+    if (d.tagName.present) {
+      map['tag_name'] = Variable<String, StringType>(d.tagName.value);
     }
     if (d.name.present) {
       map['name'] = Variable<String, StringType>(d.name.value);

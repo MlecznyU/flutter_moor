@@ -1,10 +1,11 @@
+import 'package:fluttermoor/data/model_tags.dart';
 import 'package:fluttermoor/data/moor_database.dart';
 import 'package:fluttermoor/data/model_task.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 part 'task_dao.g.dart';
 
-@UseDao(tables: [Tasks])
+@UseDao(tables: [Tasks, Tags])
 class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   final AppDatabase db;
 
@@ -16,23 +17,53 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   // a this is how we can observe them
   Stream<List<Task>> watchSimpleAllTasks() => select(tasks).watch();
 
-  Stream<List<Task>> watchAllTasks() {
+  Stream<List<TaskWithTag>> watchAllTasks() {
     return (select(tasks)
           ..orderBy([
             (_) => OrderingTerm(expression: _.dueDate, mode: OrderingMode.desc),
             (_) => OrderingTerm(expression: _.name),
           ]))
-        .watch();
+        .join(
+          [
+            leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
+          ],
+        )
+        .watch()
+        .map(
+          (rows) => rows.map(
+            (row) {
+              return TaskWithTag(
+                task: row.readTable(tasks),
+                tag: row.readTable(tags),
+              );
+            },
+          ).toList(),
+        );
   }
 
-  Stream<List<Task>> watchAllCompletedTasks() {
+  Stream<List<TaskWithTag>> watchAllCompletedTasks() {
     return (select(tasks)
           ..orderBy([
             (_) => OrderingTerm(expression: _.dueDate, mode: OrderingMode.desc),
             (_) => OrderingTerm(expression: _.name),
           ])
           ..where((_) => _.completed.equals(true)))
-        .watch();
+        .join(
+          [
+            leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
+          ],
+        )
+        .watch()
+        .map(
+          (rows) => rows.map(
+            (row) {
+              return TaskWithTag(
+                task: row.readTable(tasks),
+                tag: row.readTable(tags),
+              );
+            },
+          ).toList(),
+        );
   }
 
   // this is how we can insert
