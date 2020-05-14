@@ -25,6 +25,7 @@ dependencies:
   more: ^2.2.0
   moor_flutter: ^2.1.1
   flutter_material_color_picker: ^1.0.5
+  flutter_bloc: ^4.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

@@ -1,10 +1,9 @@
-import 'package:fluttermoor/data/model_tags.dart';
+import 'package:fluttermoor/data/tag/model_tags.dart';
 import 'package:fluttermoor/data/moor_database.dart';
-import 'package:fluttermoor/data/model_task.dart';
+import 'package:fluttermoor/data/task/model_task.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 part 'task_dao.g.dart';
-
 @UseDao(tables: [Tasks, Tags])
 class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   final AppDatabase db;

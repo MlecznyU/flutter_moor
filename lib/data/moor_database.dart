@@ -1,7 +1,7 @@
-import 'package:fluttermoor/data/tags_dao.dart';
-import 'package:fluttermoor/data/model_tags.dart';
-import 'package:fluttermoor/data/task_dao.dart';
-import 'package:fluttermoor/data/model_task.dart';
+import 'package:fluttermoor/data/tag/tags_dao.dart';
+import 'package:fluttermoor/data/tag/model_tags.dart';
+import 'package:fluttermoor/data/task/task_dao.dart';
+import 'package:fluttermoor/data/task/model_task.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 part 'moor_database.g.dart';

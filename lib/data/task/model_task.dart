@@ -1,6 +1,6 @@
 import 'package:moor_flutter/moor_flutter.dart';
 
-import 'moor_database.dart';
+import '../moor_database.dart';
 
 class Tasks extends Table {
   IntColumn get id => integer().autoIncrement()();

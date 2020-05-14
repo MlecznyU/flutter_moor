@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttermoor/data/tags_dao.dart';
-import 'package:fluttermoor/data/task_dao.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttermoor/bloc/list_of_task_with_tags/list_of_task_with_tags_bloc.dart';
+import 'package:fluttermoor/bloc/list_of_task_with_tags/list_of_task_with_tags_event.dart';
+import 'package:fluttermoor/data/tag/tags_dao.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/moor_database.dart';
@@ -28,33 +29,33 @@ class _NewTaskInputState extends State<NewTaskInput> {
 
   @override
   Widget build(BuildContext context) {
+    final ListOfTaskWithTagsBloc listBloc =
+        BlocProvider.of<ListOfTaskWithTagsBloc>(context);
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          _buildTextField(context),
-          _buildTagSelector(context),
-          _buildDateButton(context),
+          _buildTextField(listBloc),
+          //_buildTagSelector(context),
+          //_buildDateButton(context),
         ],
       ),
     );
   }
 
-  Expanded _buildTextField(BuildContext context) {
+  Expanded _buildTextField(ListOfTaskWithTagsBloc listBloc) {
     return Expanded(
       flex: 1,
       child: TextField(
         controller: controller,
         decoration: InputDecoration(hintText: 'Task Name'),
         onSubmitted: (inputName) {
-          final dao = Provider.of<TaskDao>(context, listen: false);
-          final task = TasksCompanion(
-            name: Value(inputName),
-            dueDate: Value(newTaskDate),
-            tagName: Value(selectedTag?.name),
-          );
-          dao.insertTask(task);
+          listBloc.add(AddNewTaskEvent(
+            inputName,
+            newTaskDate,
+            selectedTag?.name,
+          ));
           resetValuesAfterSubmit();
         },
       ),
